@@ -12,48 +12,26 @@ namespace DocumentReader
 
     public abstract class Figure
     {
-        public DateTime startOfExecuting = DateTime.Now;
-        public string message;
+       
+        public string message; // display message into console
         public abstract double GetSquare();
 
+        Program.WriteToFileDel writeDel = new Program.WriteToFileDel(Program.EstendInfo); 
+
+
+        // write into file from another thread via delegate
         public void  WriteToFile(string message)
         {
-            Program.ShowProgressDel del = new Program.ShowProgressDel(Program.ShowProgress);
             
-            string logfilePath = String.Empty;
-
-            string nameOfFile = startOfExecuting.ToString();
-            nameOfFile = nameOfFile.Replace(':', '_'); // to solve incorrect name of file. Windows exception.
-            logfilePath = Path.Combine(Directory.GetCurrentDirectory(), nameOfFile + ".txt");
-
             Thread myThread = new Thread(()=>
-           // Task myThread = Task.Factory.StartNew(()=>
             {
-                
                
-                Thread.Sleep(2222);
-                if (File.Exists(logfilePath))
-                {
-                    File.AppendAllText(logfilePath, message + Environment.NewLine);
-                }
-                else
-                {
-                    using (FileStream fs = File.Create(logfilePath))
-                    {
-                        Byte[] info = new UTF8Encoding(true).GetBytes(message + Environment.NewLine);
-                        fs.Write(info, 0, info.Length);
-                    }
-                }
+                writeDel(message);
                 
-
             });
              myThread.Start();
 
-            //while (myThread.IsAlive)
-            //{
-            //    del.Invoke();
-            //};
-
+             
         }
 
         //print into console, write to file
@@ -81,11 +59,7 @@ namespace DocumentReader
                 this.c = param[2];
 
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                //message = string.Format("Tringle: {0}", GetSquare());
-                //Console.WriteLine(message);
-                //WriteToFile(message);
+                Console.ForegroundColor = ConsoleColor.Yellow;                
                 DisplayProcess(name);
 
             }
@@ -119,10 +93,17 @@ namespace DocumentReader
         public double a;
         public Square(double[] param, string name)
         {
-            this.a = param[0];
-            Console.ForegroundColor = ConsoleColor.Green;
+            try
+            {
+                this.a = param[0];
+                Console.ForegroundColor = ConsoleColor.Green;
 
-            DisplayProcess(name);
+                DisplayProcess(name);
+            }
+            catch
+            {
+                return;
+            }
         }
 
         public override double GetSquare()
@@ -137,10 +118,18 @@ namespace DocumentReader
         public double radius;
         public Circle(double[] param, string name)
         {
-            this.radius = param[0];
-            Console.ForegroundColor = ConsoleColor.Red;
+            try
+            {
+                this.radius = param[0];
+                Console.ForegroundColor = ConsoleColor.Red;
 
-            DisplayProcess(name);
+                DisplayProcess(name);
+            }
+            catch
+            {
+                return;
+            }
+            
         }
 
         public override double GetSquare()
